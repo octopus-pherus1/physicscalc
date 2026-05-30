@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Calc | Academic Tools</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚛</text></svg>">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
+
+    <style>
+        :root {
+            --bg-base: #09090b;
+            --bg-surface: #111827;
+            --bg-hover: #1f2937;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #60a5fa;
+            --accent-muted: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; }
+        
+        body { 
+            background-color: var(--bg-base); 
+            color: var(--text-main); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            font-size: 14px; 
+            position: relative;
+            z-index: 0;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(59,130,246,.08), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(34,197,94,.05), transparent 40%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Sidebar */
+        aside { width: 300px; background-color: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; flex-shrink: 0;}
+        
+        .logo-container { padding: 24px; border-bottom: 1px solid var(--border); background: var(--bg-surface); display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .logo { font-size: 18px; font-weight: 700; color: var(--accent); display: flex; align-items: center; justify-content: space-between; }
+        
+        .version-badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            background: rgba(96,165,250,.15);
+            border: 1px solid rgba(96,165,250,.25);
+            border-radius: 999px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-list { list-style: none; padding: 12px; flex-grow: 1; overflow-y: auto; }
+        .nav-item { padding: 10px 12px; margin-bottom: 4px; border-radius: 6px; cursor: pointer; color: var(--text-muted); transition: 0.2s; font-weight: 500; display: flex; align-items: center; gap: 8px;}
+        .nav-item:hover, .nav-item.active { background-color: var(--bg-hover); color: var(--text-main); }
+        .nav-item.active { border-left: 3px solid var(--accent); }
+        .nav-divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+        .sidebar-quote {
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-style: italic;
+            border-top: 1px solid var(--border);
+            background: rgba(0,0,0,0.2);
+            line-height: 1.5;
+            flex-shrink: 0;
+        }
+        .sidebar-quote span { display: block; margin-top: 8px; font-weight: 600; font-style: normal; color: var(--accent-muted); }
+
+        /* Main Area */
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        
+        header { padding: 32px 48px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg-base); z-index: 5;}
+        header h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; letter-spacing: -0.5px;}
+        header p { color: var(--text-muted); font-size: 15px; line-height: 1.5; max-width: 800px; }
+        
+        .stats-row { display: flex; gap: 16px; margin-top: 16px; }
+        .stat-badge { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 4px 12px; border-radius: 4px; font-size: 12px; color: var(--text-muted); font-weight: 600;}
+
+        .content-container { padding: 32px 48px; flex-grow: 1; overflow-y: auto; padding-bottom: 60px; }
+
+        /* Cards & Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        
+        .card { 
+            background: rgba(17, 24, 39, 0.7); 
+            border: 1px solid var(--border); 
+            padding: 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+        }
+        .card:hover { 
+            border-color: var(--accent); 
+            transform: translateY(-2px); 
+            box-shadow: 0 0 20px rgba(96,165,250,.15), 0 0 40px rgba(96,165,250,.05);
+        }
+        .card h3 { font-size: 15px; margin-bottom: 6px; color: var(--text-main); font-weight: 500;}
+        .card p { font-size: 12px; color: var(--accent-muted); font-weight: 600; }
+
+        /* Calculator View & Formulas */
+        #calc-view, #about-view { display: none; max-width: 650px; }
+        .back-btn { background: transparent; color: var(--accent); border: none; cursor: pointer; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .back-btn:hover { text-decoration: underline; }
+        
+        .formula-box {
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px dashed var(--border);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            text-align: center;
+            overflow-x: auto;
+            color: var(--accent);
+            font-size: 1.1em;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Forms */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; background: rgba(9, 9, 11, 0.8); border: 1px solid var(--border); padding: 12px; border-radius: 6px; color: var(--text-main); font-size: 14px; transition: 0.2s;}
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
+        .form-group select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239ca3af%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px top 50%; background-size: 12px auto; padding-right: 40px; }
+        .form-group textarea { font-family: monospace; resize: vertical; min-height: 100px; }
+
+        .btn-calc { background: var(--accent); color: var(--bg-base); border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; margin-bottom: 12px;}
+        .btn-calc:hover { background: var(--accent-muted); box-shadow: 0 0 15px rgba(96, 165, 250, 0.4); }
+        
+        .result-box { margin-top: 12px; padding: 20px; background: rgba(96, 165, 250, 0.05); border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: 6px; font-size: 15px; line-height: 1.6; transition: 0.3s; backdrop-filter: blur(5px); overflow-x: auto;}
+        .result-box.active { border-left-color: var(--accent); border-color: var(--border); }
+
+        /* About Section */
+        .about-content { background: var(--bg-surface); padding: 32px; border-radius: 8px; border: 1px solid var(--border); line-height: 1.7; color: var(--text-muted); }
+        .about-content h2 { color: var(--text-main); margin-bottom: 16px; font-size: 20px; }
+        .about-content ul { margin: 16px 0 16px 24px; }
+        .about-content li { margin-bottom: 8px; }
+        .developer-card { margin-top: 32px; padding: 24px; background: rgba(9,9,11,0.5); border: 1px solid var(--border); border-radius: 8px; }
+        .developer-card h3 { color: var(--accent); margin-bottom: 16px; font-size: 18px;}
+        .developer-card strong { color: var(--text-main); font-size: 16px; display: block; margin-bottom: 4px;}
+
+        /* Fixed Compact Footer */
+        footer { 
+            background: rgba(11, 15, 25, 1); 
+            border-top: 1px solid var(--border); 
+            padding: 12px 32px; 
+            font-size: 11px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            gap: 24px;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+        .credits { color: var(--text-muted); line-height: 1.4; white-space: nowrap; }
+        .credits span { color: var(--text-main); font-weight: 600; font-size: 13px; display: block; margin-bottom: 2px;}
+        .disclaimers { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: flex-end; }
+        .caution { color: var(--warning); display: flex; gap: 8px; background: rgba(245, 158, 11, 0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.2); line-height: 1.4; align-items: center; text-align: left; max-width: 600px;}
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo-container">
+            <div class="logo">
+                <div>⚛ Physics Calc <span>ℏ</span></div>
+                <span class="version-badge">v1.4 Beta</span>
+            </div>
+        </div>
+        <ul class="nav-list" id="nav-list">
+            </ul>
+        <div class="sidebar-quote">
+            "The important thing is not to stop questioning. Curiosity has its own reason for existing."
+            <span>— Albert Einstein</span>
+        </div>
+    </aside>
+
+    <main>
+        <header id="main-header">
+            <h1 id="header-title">Loading...</h1>
+            <p id="header-desc">Please wait while the hub initializes.</p>
+            <div id="header-stats" class="stats-row" style="display: none;">
+                <div class="stat-badge">97 Calculators</div>
+                <div class="stat-badge">10 Categories</div>
+                <div class="stat-badge">Research + Education</div>
+                <div class="stat-badge" style="border-color: var(--success); color: var(--success);">LaTeX Enabled</div>
+            </div>
+        </header>
+        
+        <div class="content-container">
+            <div id="grid-view" class="grid"></div>
+            
+            <div id="calc-view">
+                <button class="back-btn" onclick="loadDashboard()">← Back to Dashboard</button>
+                <div id="formula-container"></div>
+                <div id="calc-form-container"></div>
+                <div id="calc-result" class="result-box">Awaiting input... Result will appear here.</div>
+            </div>
+
+            <div id="about-view" class="about-content">
+                <h2>About Physics Calc</h2>
+                <p>Physics Calc is an open educational platform designed to provide accessible computational tools for undergraduate students, graduate researchers, and educators. Built to bridge the gap between textbook theory and rapid numerical verification, with equations rendered dynamically via KaTeX.</p>
+                <br>
+                <p><strong>Areas covered:</strong></p>
+                <ul>
+                    <li>General Physics & Mechanics</li>
+                    <li>Optics, Oscillations & Waves</li>
+                    <li>Quantum Mechanics & Modern Physics</li>
+                    <li>Solid State Physics & Materials Science</li>
+                    <li>Scientific Computing & Research Utilities</li>
+                </ul>
+                <div class="developer-card">
+                    <h3>About Me</h3>
+                    <strong>Rafsanjanee Ocson</strong>
+                    B.Sc. in Physics<br>
+                    Jashore University of Science and Technology, Bangladesh
+                    <br><br>
+                    I am a Physics undergraduate student with a strong interest in computational physics, data analysis, and web-based scientific tools. My goal is to simplify complex physics concepts through interactive calculators and intuitive digital platforms that help students learn more effectively.
+                    <br><br>
+                    This website is part of my ongoing effort to combine physics knowledge with programming skills, creating useful tools for students, researchers, and learners who want quick and reliable physics calculations in one place.
+                    <br><br>
+                    I am continuously improving my skills in Python, web development, and scientific computing, with a long-term vision of contributing to advanced research in physics and higher studies abroad.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="credits">
+                <span>Developed by Rafsanjanee Ocson</span>
+                B.Sc. in Physics<br>
+                Jashore University of Science and Technology
+            </div>
+            <div class="disclaimers">
+                <div class="caution">
+                    <span style="font-size: 16px;">⚠</span>
+                    <div>
+                        AI-generated experimental website for educational and research-support purposes; may contain errors—please verify results before academic or publication use.
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // CORE MATH CONSTANTS
+        const c = 299792458, h = 6.626e-34, hbar = 1.054e-34, e = 1.602e-19, me = 9.109e-31;
+        const g = 9.81, G = 6.674e-11, N_A = 6.022e23, k_B = 1.38e-23, eps0 = 8.854e-12, mu0 = 4 * Math.PI * 1e-7;
+
+        // MATRIX PARSING HELPER
+        function parseMatrix(str) {
+            return str.trim().split('\n').filter(r=>r.trim()!=='').map(row => row.split(',').map(Number));
+        }
+
+        // DETERMINANT HELPER (Recursive)
+        function det(m) {
+            if (m.length !== m[0].length) return NaN;
+            if (m.length === 1) return m[0][0];
+            if (m.length === 2) return m[0][0]*m[1][1] - m[0][1]*m[1][0];
+            let d = 0;
+            for(let c=0; c<m.length; c++) {
+                let sub = m.slice(1).map(r => r.filter((_, j) => j !== c));
+                d += (c%2 === 0 ? 1 : -1) * m[0][c] * det(sub);
+            }
+            return d;
+        }
+
+        // CALCULATOR LOGIC DICTIONARY
+        const calcLogic = {
+            // General Physics
+            "Unit Converter": { 
+                desc: "Convert between various standard units of length, mass, and time.",
+                formula: "\\text{Value}_{to} = \\text{Value}_{from} \\times \\text{Conversion Factor}",
+                inputs: [ {id:"v", label:"Value", type:"number", default: 1}, {id:"from", label:"From Unit", type:"select", options: ["m", "cm", "mm", "nm", "km", "kg", "g", "mg", "s", "ms", "min", "hr"]}, {id:"to", label:"To Unit", type:"select", options: ["m", "cm", "mm", "nm", "km", "kg", "g", "mg", "s", "ms", "min", "hr"]} ], 
+                calc: v => { 
+                    const bases = { "m":1, "cm":1e-2, "mm":1e-3, "nm":1e-9, "km":1e3, "kg":1, "g":1e-3, "mg":1e-6, "s":1, "ms":1e-3, "min":60, "hr":3600 };
+                    const types = { "m":1, "cm":1, "mm":1, "nm":1, "km":1, "kg":2, "g":2, "mg":2, "s":3, "ms":3, "min":3, "hr":3 };
+                    if (types[v.from] !== types[v.to]) return `<span style="color:var(--warning)">Dimension mismatch error.</span>`;
+                    const result = v.v * (bases[v.from] / bases[v.to]);
+                    return `$$ \\text{Converted Value, } V = ${result.toExponential(4)} \\text{ ${v.to}} $$`; 
+                }
+            },
+            "Significant Figures Calculator": { formula: "\\text{Count of meaningful digits}", inputs: [{id:"n",label:"Number (e.g., 0.00450)", type:"text"}], calc: v => { let s=v.n.toString().replace(/[^0-9.]/g,''); return `$$ \\text{Sig Figs } \\approx ${s.length} $$`; }},
+            "Scientific Notation Converter": { formula: "a \\times 10^n", inputs: [{id:"n",label:"Number"}], calc: v => `$$ \\text{Notation, } N = ${v.n.toExponential(4)} $$` },
+            "Percentage Error Calculator": { formula: "\\% \\text{ Error} = \\left| \\frac{\\text{Exp} - \\text{Theo}}{\\text{Theo}} \\right| \\times 100", inputs: [{id:"t",label:"Theoretical"},{id:"e",label:"Experimental"}], calc: v => `$$ \\text{Percentage Error, } \\% = ${Math.abs((v.e-v.t)/v.t * 100).toFixed(4)}\\% $$` },
+            "Relative Error Calculator": { formula: "\\text{Relative Error} = \\left| \\frac{\\text{Exp} - \\text{Theo}}{\\text{Theo}} \\right|", inputs: [{id:"t",label:"Theoretical"},{id:"e",label:"Experimental"}], calc: v => `$$ \\text{Relative Error, } E_{rel} = ${Math.abs((v.e-v.t)/v.t).toFixed(5)} $$` },
+            "Error Propagation Calculator": { formula: "\\frac{\\delta z}{z} = \\sqrt{\\left(\\frac{\\delta x}{x}\\right)^2 + \\left(\\frac{\\delta y}{y}\\right)^2}", inputs: [{id:"x",label:"x"},{id:"dx",label:"δx"},{id:"y",label:"y"},{id:"dy",label:"δy"}], calc: v => `$$ \\text{Relative Uncertainty, } \\frac{\\delta z}{z} = ${Math.sqrt((v.dx/v.x)**2 + (v.dy/v.y)**2).toFixed(5)} $$` },
+            "Weighted Mean Calculator": { formula: "\\bar{x}_w = \\frac{\\sum x_i w_i}{\\sum w_i}", inputs: [{id:"x",label:"Values (comma separated)", type:"text"},{id:"w",label:"Weights (comma separated)", type:"text"}], calc: v => { let x=v.x.split(',').map(Number), w=v.w.split(',').map(Number), s1=0, s2=0; for(let i=0;i<x.length;i++){s1+=x[i]*w[i]; s2+=w[i];} return `$$ \\text{Weighted Mean, } \\bar{x}_w = ${(s1/s2).toFixed(4)} $$`; } },
+            "Least Squares Fitting Calculator": { formula: "y = mx + c", inputs: [{id:"x",label:"X vals (x1,x2)", type:"text"},{id:"y",label:"Y vals (y1,y2)", type:"text"}], calc: v => `Data structure math pending. Use matrix operations.`},
+            "Chi-Square Calculator": { formula: "\\chi^2 = \\sum \\frac{(O_i - E_i)^2}{E_i}", inputs: [{id:"o",label:"Observed"},{id:"e",label:"Expected"}], calc: v => `$$ \\text{Chi-Square, } \\chi^2 = ${((v.o-v.e)**2/v.e).toFixed(4)} $$` },
+            "Standard Deviation Calculator": { formula: "\\sigma = \\sqrt{\\frac{\\sum (x_i - \\mu)^2}{N}}", inputs: [{id:"d",label:"Data (comma separated)", type:"text"}], calc: v => { let a=v.d.split(',').map(Number), m=a.reduce((a,b)=>a+b)/a.length; return `$$ \\text{Standard Deviation, } \\sigma = ${Math.sqrt(a.map(x=>Math.pow(x-m,2)).reduce((a,b)=>a+b)/a.length).toFixed(4)} $$`; } },
+
+            // Mechanics
+            "Projectile Motion Calculator": { formula: "H = \\frac{v_0^2 \\sin^2\\theta}{2g}, \\quad R = \\frac{v_0^2 \\sin(2\\theta)}{g}", inputs: [{id:"v",label:"Initial Velocity (m/s)"},{id:"a",label:"Angle (°)"}], calc: v => { let r=v.a*Math.PI/180; return `$$ \\text{Max Height, } H = ${((v.v*Math.sin(r))**2/(2*g)).toFixed(2)} \\text{ m} $$<br>$$ \\text{Range, } R = ${(v.v**2*Math.sin(2*r)/g).toFixed(2)} \\text{ m} $$`; } },
+            "Free Fall Calculator": { formula: "t = \\sqrt{\\frac{2h}{g}}, \\quad v = \\sqrt{2gh}", inputs: [{id:"h",label:"Height (m)"}], calc: v => `$$ \\text{Time, } t = ${Math.sqrt(2*v.h/g).toFixed(3)} \\text{ s} $$<br>$$ \\text{Final Velocity, } v = ${Math.sqrt(2*g*v.h).toFixed(2)} \\text{ m/s} $$` },
+            "Work-Energy Calculator": { formula: "W = F \\cdot d \\cos\\theta", inputs: [{id:"f",label:"Force (N)"},{id:"d",label:"Distance (m)"},{id:"a",label:"Angle (°)"}], calc: v => `$$ \\text{Work Done, } W = ${(v.f*v.d*Math.cos(v.a*Math.PI/180)).toFixed(2)} \\text{ J} $$` },
+            "Conservation of Momentum Calculator": { formula: "p_{total} = m_1 v_1 + m_2 v_2", inputs: [{id:"m1",label:"m1 (kg)"},{id:"v1",label:"v1 (m/s)"},{id:"m2",label:"m2 (kg)"},{id:"v2",label:"v2 (m/s)"}], calc: v => `$$ \\text{Total Momentum, } p = ${(v.m1*v.v1 + v.m2*v.v2).toFixed(2)} \\text{ kg m/s} $$` },
+            "Elastic Collision Calculator": { formula: "v_1' = \\frac{m_1-m_2}{m_1+m_2}v_1 + \\frac{2m_2}{m_1+m_2}v_2", inputs: [{id:"m1",label:"m1"},{id:"v1",label:"v1"},{id:"m2",label:"m2"},{id:"v2",label:"v2"}], calc: v => `$$ \\text{Final } v_1' = ${(((v.m1-v.m2)*v.v1 + 2*v.m2*v.v2)/(v.m1+v.m2)).toFixed(2)} \\text{ m/s} $$ <br> $$ \\text{Final } v_2' = ${(((v.m2-v.m1)*v.v2 + 2*v.m1*v.v1)/(v.m1+v.m2)).toFixed(2)} \\text{ m/s} $$` },
+            "Inelastic Collision Calculator": { formula: "v_f = \\frac{m_1 v_1 + m_2 v_2}{m_1 + m_2}", inputs: [{id:"m1",label:"m1"},{id:"v1",label:"v1"},{id:"m2",label:"m2"},{id:"v2",label:"v2"}], calc: v => `$$ \\text{Final Velocity, } v_f = ${((v.m1*v.v1 + v.m2*v.v2)/(v.m1+v.m2)).toFixed(2)} \\text{ m/s} $$` },
+            "Rotational Kinetic Energy Calculator": { formula: "K_{rot} = \\frac{1}{2} I \\omega^2", inputs: [{id:"i",label:"Moment of Inertia (kg·m²)"},{id:"w",label:"Angular Velocity (rad/s)"}], calc: v => `$$ \\text{Kinetic Energy, } K_{rot} = ${(0.5*v.i*v.w**2).toFixed(2)} \\text{ J} $$` },
+            "Moment of Inertia Calculator": { formula: "I_{point} = mr^2", inputs: [{id:"m",label:"Mass (kg)"},{id:"r",label:"Radius (m)"}], calc: v => `$$ \\text{Inertia (Hoop), } I = ${(v.m*v.r**2).toFixed(4)} \\text{ kg m}^2 $$` },
+            "Pendulum Period Calculator": { formula: "T = 2\\pi \\sqrt{\\frac{L}{g}}", inputs: [{id:"l",label:"Length (m)"}], calc: v => `$$ \\text{Period, } T = ${(2*Math.PI*Math.sqrt(v.l/g)).toFixed(4)} \\text{ s} $$` },
+            "Escape Velocity Calculator": { formula: "v_e = \\sqrt{\\frac{2GM}{R}}", inputs: [{id:"m",label:"Planet Mass (kg)"},{id:"r",label:"Planet Radius (m)"}], calc: v => `$$ \\text{Escape Velocity, } v_e = ${Math.sqrt(2*G*v.m/v.r).toExponential(4)} \\text{ m/s} $$` },
+
+            // Oscillations & Waves
+            "Simple Harmonic Motion Calculator": { formula: "x(t) = A \\cos(\\omega t + \\phi)", inputs: [{id:"A",label:"Amplitude (A) in meters"},{id:"w",label:"Angular Freq (ω) rad/s"},{id:"t",label:"Time (t) in seconds"},{id:"phi",label:"Phase (φ) in radians"}], calc: v => { const x = v.A * Math.cos(v.w * v.t + v.phi); return `$$ \\text{Position, } x(t) = ${x.toFixed(4)} \\text{ m} $$ <br> $$ \\text{Max Velocity, } v_{max} = ${(v.A * v.w).toFixed(4)} \\text{ m/s} $$`; } },
+            "Spring Constant Calculator": { formula: "k = \\frac{F}{x}", inputs: [{id:"f",label:"Force (N)"},{id:"x",label:"Extension (m)"}], calc: v => `$$ \\text{Spring Constant, } k = ${(v.f/v.x).toFixed(2)} \\text{ N/m} $$` },
+            "Resonance Frequency Calculator": { formula: "f_0 = \\frac{1}{2\\pi\\sqrt{LC}}", inputs: [{id:"l",label:"Inductance (H)"},{id:"c",label:"Capacitance (F)"}], calc: v => `$$ \\text{Resonance Freq, } f_0 = ${(1/(2*Math.PI*Math.sqrt(v.l*v.c))).toExponential(4)} \\text{ Hz} $$` },
+            "Doppler Effect Calculator": { formula: "f' = f \\left( \\frac{v \\pm v_o}{v \\mp v_s} \\right)", inputs: [{id:"f",label:"Source Freq (Hz)"},{id:"vs",label:"Source Vel (m/s)"},{id:"vo",label:"Obs Vel (m/s)"}], calc: v => `$$ \\text{Observed Freq, } f' = ${(v.f*(343+v.vo)/(343-v.vs)).toFixed(2)} \\text{ Hz} $$` },
+            "Wave Speed Calculator": { formula: "v = f \\lambda", inputs: [{id:"f",label:"Freq (Hz)"},{id:"l",label:"Wavelength (m)"}], calc: v => `$$ \\text{Speed, } v = ${(v.f*v.l).toFixed(2)} \\text{ m/s} $$` },
+            "Standing Wave Calculator": { formula: "f_n = \\frac{nv}{2L}", inputs: [{id:"n",label:"Harmonic (n)"},{id:"l",label:"String Length (m)"},{id:"v",label:"Wave Speed (m/s)"}], calc: v => `$$ \\text{Frequency, } f_n = ${((v.n*v.v)/(2*v.l)).toFixed(2)} \\text{ Hz} $$` },
+            "Beats Frequency Calculator": { formula: "f_{beat} = |f_1 - f_2|", inputs: [{id:"f1",label:"Freq 1 (Hz)"},{id:"f2",label:"Freq 2 (Hz)"}], calc: v => `$$ \\text{Beat Freq, } f_{beat} = ${Math.abs(v.f1-v.f2).toFixed(2)} \\text{ Hz} $$` },
+
+            // Electricity & Magnetism
+            "Ohm's Law Calculator": { formula: "V = I R", inputs: [{id:"v",label:"Voltage (V)"},{id:"r",label:"Resistance (Ω)"}], calc: v => `$$ \\text{Current, } I = ${(v.v/v.r).toFixed(4)} \\text{ A} $$` },
+            "Kirchhoff Circuit Solver": { formula: "V_{R2} = V \\frac{R_2}{R_1 + R_2}", inputs: [{id:"v",label:"Voltage (V)"},{id:"r1",label:"R1 (Ω)"},{id:"r2",label:"R2 (Ω)"}], calc: v => `$$ \\text{Voltage Divider, } V_{R2} = ${(v.v * (v.r2/(v.r1+v.r2))).toFixed(4)} \\text{ V} $$` },
+            "RC Circuit Calculator": { formula: "\\tau = R C", inputs: [{id:"r",label:"Resistance (Ω)"},{id:"c",label:"Capacitance (F)"}], calc: v => `$$ \\text{Time Constant, } \\tau = ${(v.r*v.c).toExponential(4)} \\text{ s} $$` },
+            "RL Circuit Calculator": { formula: "\\tau = \\frac{L}{R}", inputs: [{id:"r",label:"Resistance (Ω)"},{id:"l",label:"Inductance (H)"}], calc: v => `$$ \\text{Time Constant, } \\tau = ${(v.l/v.r).toExponential(4)} \\text{ s} $$` },
+            "RLC Resonance Calculator": { formula: "\\omega_0 = \\frac{1}{\\sqrt{LC}}", inputs: [{id:"l",label:"L (H)"},{id:"c",label:"C (F)"}], calc: v => `$$ \\text{Angular Freq, } \\omega_0 = ${(1/Math.sqrt(v.l*v.c)).toExponential(4)} \\text{ rad/s} $$` },
+            "Capacitor Energy Calculator": { formula: "U = \\frac{1}{2} C V^2", inputs: [{id:"c",label:"Capacitance (F)"},{id:"v",label:"Voltage (V)"}], calc: v => `$$ \\text{Stored Energy, } U = ${(0.5*v.c*v.v**2).toExponential(4)} \\text{ J} $$` },
+            "Magnetic Field Calculator": { formula: "B = \\frac{\\mu_0 I}{2\\pi r}", inputs: [{id:"i",label:"Current (A)"},{id:"r",label:"Distance (m)"}], calc: v => `$$ \\text{B-Field (Wire), } B = ${((mu0*v.i)/(2*Math.PI*v.r)).toExponential(4)} \\text{ T} $$` },
+            "Solenoid Field Calculator": { formula: "B = \\mu_0 n I", inputs: [{id:"n",label:"Turns/meter (n)"},{id:"i",label:"Current (A)"}], calc: v => `$$ \\text{B-Field (Core), } B = ${(mu0*v.n*v.i).toExponential(4)} \\text{ T} $$` },
+            "Lorentz Force Calculator": { formula: "F = qvB", inputs: [{id:"q",label:"Charge (C)"},{id:"v",label:"Velocity (m/s)"},{id:"b",label:"B-field (T)"}], calc: v => `$$ \\text{Force, } F = ${(v.q*v.v*v.b).toExponential(4)} \\text{ N} $$` },
+            "Hall Coefficient Calculator": { formula: "R_H = \\frac{1}{ne}", inputs: [{id:"n",label:"Charge Carrier Density (1/m³)"}], calc: v => `$$ \\text{Hall Coefficient, } R_H = ${(1/(v.n*e)).toExponential(4)} \\text{ m}^3/\\text{C} $$` },
+
+            // Optics
+            "Lens Equation Calculator": { formula: "\\frac{1}{f} = \\frac{1}{d_o} + \\frac{1}{d_i}", inputs: [{id:"f",label:"Focal Length (cm)"},{id:"do",label:"Object Dist (cm)"}], calc: v => `$$ \\text{Image Distance, } d_i = ${(1/(1/v.f - 1/v.do)).toFixed(4)} \\text{ cm} $$` },
+            "Mirror Equation Calculator": { formula: "\\frac{1}{f} = \\frac{1}{d_o} + \\frac{1}{d_i}", inputs: [{id:"f",label:"Focal Length (cm)"},{id:"do",label:"Object Dist (cm)"}], calc: v => `$$ \\text{Image Distance, } d_i = ${(1/(1/v.f - 1/v.do)).toFixed(4)} \\text{ cm} $$` },
+            "Magnification Calculator": { formula: "M = \\frac{h_i}{h_o}", inputs: [{id:"hi",label:"Image Height"},{id:"ho",label:"Object Height"}], calc: v => `$$ \\text{Magnification, } M = ${(v.hi/v.ho).toFixed(4)} $$` },
+            "Diffraction Grating Calculator": { formula: "d \\sin\\theta = n\\lambda", inputs: [{id:"d",label:"Line Spacing d (m)"},{id:"theta",label:"Angle (°)"},{id:"n",label:"Order (n)"}], calc: v => `$$ \\text{Wavelength, } \\lambda = ${((v.d*Math.sin(v.theta*Math.PI/180))/v.n).toExponential(4)} \\text{ m} $$` },
+            "Bragg's Law Calculator": { formula: "n\\lambda = 2d \\sin\\theta", inputs: [{id:"n",label:"Order (n)"},{id:"lam",label:"Wavelength (Å)"},{id:"theta",label:"Angle (°)"}], calc: v => `$$ \\text{Spacing, } d = ${((v.n*v.lam)/(2*Math.sin(v.theta*Math.PI/180))).toFixed(5)} \\text{ \\AA} $$` },
+            "Interference Fringe Width Calculator": { formula: "y = \\frac{\\lambda D}{d}", inputs: [{id:"lam",label:"λ (m)"},{id:"D",label:"Screen Dist (m)"},{id:"d",label:"Slit separation (m)"}], calc: v => `$$ \\text{Fringe Width, } y = ${((v.lam*v.D)/v.d).toExponential(4)} \\text{ m} $$` },
+            "Numerical Aperture Calculator": { formula: "\\text{NA} = \\sqrt{n_1^2 - n_2^2}", inputs: [{id:"n1",label:"Core Index (n1)"},{id:"n2",label:"Cladding Index (n2)"}], calc: v => `$$ \\text{Numerical Aperture, NA} = ${Math.sqrt(v.n1**2 - v.n2**2).toFixed(4)} $$` },
+            "Fiber Optic Attenuation Calculator": { formula: "\\alpha = \\frac{10}{L} \\log_{10} \\left(\\frac{P_{in}}{P_{out}}\\right)", inputs: [{id:"pi",label:"P in (mW)"},{id:"po",label:"P out (mW)"},{id:"l",label:"Length (km)"}], calc: v => `$$ \\text{Attenuation, } \\alpha = ${( (10/v.l)*Math.log10(v.pi/v.po) ).toFixed(4)} \\text{ dB/km} $$` },
+
+            // Modern Physics & Quantum
+            "Photoelectric Effect Calculator": { formula: "K_{max} = \\frac{hc}{\\lambda} - \\Phi", inputs: [{id:"lam",label:"Wavelength (nm)"},{id:"phi",label:"Work Function (eV)"}], calc: v => { let E=(h*c)/(v.lam*1e-9)/e; return `$$ \\text{Max KE, } K_{max} = ${Math.max(0, E-v.phi).toFixed(4)} \\text{ eV} $$`; } },
+            "De Broglie Wavelength Calculator": { formula: "\\lambda = \\frac{h}{mv}", inputs: [{id:"m",label:"Mass (kg)"},{id:"v",label:"Velocity (m/s)"}], calc: v => `$$ \\text{Wavelength, } \\lambda = ${(h/(v.m*v.v)).toExponential(4)} \\text{ m} $$` },
+            "Compton Shift Calculator": { formula: "\\Delta\\lambda = \\frac{h}{m_e c} (1 - \\cos\\theta)", inputs: [{id:"theta",label:"Scattering Angle (°)"}], calc: v => `$$ \\text{Shift, } \\Delta\\lambda = ${((h/(me*c))*(1-Math.cos(v.theta*Math.PI/180))).toExponential(4)} \\text{ m} $$` },
+            "Relativistic Energy Calculator": { formula: "E = \\frac{mc^2}{\\sqrt{1 - v^2/c^2}}", inputs: [{id:"m",label:"Rest Mass (kg)"},{id:"v",label:"Velocity (fraction of c)"}], calc: v => `$$ \\text{Total Energy, } E = ${((v.m*c**2)/Math.sqrt(1-v.v**2)).toExponential(4)} \\text{ J} $$` },
+            "Relativistic Momentum Calculator": { formula: "p = \\frac{mv}{\\sqrt{1 - v^2/c^2}}", inputs: [{id:"m",label:"Rest Mass (kg)"},{id:"v",label:"Velocity (fraction of c)"}], calc: v => `$$ \\text{Momentum, } p = ${((v.m*v.v*c)/Math.sqrt(1-v.v**2)).toExponential(4)} \\text{ kg m/s} $$` },
+            "Mass-Energy Converter": { formula: "E = mc^2", inputs: [{id:"m",label:"Mass (kg)"}], calc: v => `$$ \\text{Energy, } E = ${(v.m*c**2).toExponential(4)} \\text{ J} $$` },
+            "Radioactive Decay Calculator": { formula: "N(t) = N_0 e^{-\\lambda t}", inputs: [{id:"n0",label:"Initial N0"},{id:"lam",label:"Decay Const (λ)"},{id:"t",label:"Time (s)"}], calc: v => `$$ \\text{Remaining, } N(t) = ${(v.n0*Math.exp(-v.lam*v.t)).toExponential(4)} $$` },
+            "Half-Life Calculator": { formula: "t_{1/2} = \\frac{\\ln(2)}{\\lambda}", inputs: [{id:"lam",label:"Decay Constant (λ)"}], calc: v => `$$ \\text{Half-Life, } t_{1/2} = ${(Math.LN2 / v.lam).toExponential(4)} \\text{ s} $$` },
+            "Particle in a Box Energy Levels": { formula: "E_n = \\frac{n^2 h^2}{8mL^2}", inputs: [{id:"n",label:"Quantum Number (n)"},{id:"L",label:"Box Length (nm)"}], calc: v => `$$ \\text{Energy Level, } E_n = ${(((v.n**2)*(h**2))/(8*me*(v.L*1e-9)**2)/e).toFixed(4)} \\text{ eV} $$` },
+            "Tunneling Probability Calculator": { formula: "T \\approx e^{-2a \\sqrt{2m(V-E)/\\hbar^2}}", inputs: [{id:"E",label:"Particle E (eV)"},{id:"V",label:"Barrier V (eV)"},{id:"a",label:"Width (nm)"}], calc: v => { let k = Math.sqrt(2*me*(v.V-v.E)*e)/hbar; return `$$ \\text{Probability, } T \\approx ${Math.exp(-2*k*(v.a*1e-9)).toExponential(4)} $$`; } },
+            "Quantum Harmonic Oscillator Levels": { formula: "E_n = \\left(n + \\frac{1}{2}\\right)\\hbar\\omega", inputs: [{id:"n",label:"Quantum No. (n)"},{id:"w",label:"Angular Freq ω (rad/s)"}], calc: v => `$$ \\text{Energy, } E_n = ${((v.n + 0.5)*hbar*v.w).toExponential(4)} \\text{ J} $$` },
+            "Hydrogen Atom Energy Calculator": { formula: "E_n = -\\frac{13.6 \\text{ eV}}{n^2}", inputs: [{id:"n",label:"Principal Quantum No. (n)"}], calc: v => `$$ \\text{Energy, } E_n = ${(-13.6 / (v.n**2)).toFixed(4)} \\text{ eV} $$` },
+
+            // Solid State & Materials Science
+            "Miller Index Calculator": { formula: "(hkl) \\propto \\left(\\frac{1}{x}, \\frac{1}{y}, \\frac{1}{z}\\right)", inputs: [{id:"x",label:"x-intercept"},{id:"y",label:"y-intercept"},{id:"z",label:"z-intercept"}], calc: v => `$$ \\text{Indices, } (hkl) \\rightarrow (${(1/v.x).toFixed(2)}, ${(1/v.y).toFixed(2)}, ${(1/v.z).toFixed(2)}) $$` },
+            "Interplanar Spacing Calculator": { formula: "d_{hkl} = \\frac{a}{\\sqrt{h^2 + k^2 + l^2}}", inputs: [{id:"a",label:"Lattice Const a (Å)"},{id:"h",label:"h"},{id:"k",label:"k"},{id:"l",label:"l"}], calc: v => `$$ \\text{Spacing, } d_{hkl} = ${(v.a/Math.sqrt(v.h**2 + v.k**2 + v.l**2)).toFixed(4)} \\text{ \\AA} $$` },
+            "Bragg Angle Calculator": { formula: "\\theta = \\arcsin\\left(\\frac{\\lambda}{2d}\\right)", inputs: [{id:"lam",label:"λ (Å)"},{id:"d",label:"Spacing d (Å)"}], calc: v => `$$ \\text{Angle, } \\theta = ${(Math.asin(v.lam/(2*v.d))*180/Math.PI).toFixed(4)}^\\circ $$` },
+            "Packing Factor Calculator": { formula: "\\text{APF} = \\frac{N_{atoms} V_{atom}}{V_{cell}}", inputs: [{id:"type",label:"Type (1=SC, 2=BCC, 3=FCC)"}], calc: v => `$$ \\text{Factor, APF} = ${v.type==1 ? '0.52 \\text{ (SC)}' : v.type==2 ? '0.68 \\text{ (BCC)}' : '0.74 \\text{ (FCC)}'} $$` },
+            "Density of Crystal Calculator": { formula: "\\rho = \\frac{n A}{V_{cell} N_A}", inputs: [{id:"n",label:"Atoms/cell (n)"},{id:"A",label:"Atomic Wt (g/mol)"},{id:"a",label:"Lattice a (cm)"}], calc: v => `$$ \\text{Density, } \\rho = ${((v.n*v.A)/( (v.a**3) * N_A )).toFixed(4)} \\text{ g/cm}^3 $$` },
+            "Fermi Energy Calculator": { formula: "E_F = \\frac{\\hbar^2}{2m} \\left(3\\pi^2 \\frac{N}{V}\\right)^{2/3}", inputs: [{id:"n",label:"Electron Density N/V (1/m³)"}], calc: v => `$$ \\text{Fermi Energy, } E_F = ${((hbar**2)/(2*me) * Math.pow(3*Math.PI**2 * v.n, 2/3) / e).toFixed(4)} \\text{ eV} $$` },
+            "Fermi-Dirac Distribution Calculator": { formula: "f(E) = \\frac{1}{e^{(E-E_F)/k_B T} + 1}", inputs: [{id:"e",label:"Energy (eV)"},{id:"ef",label:"Fermi E (eV)"},{id:"t",label:"Temp (K)"}], calc: v => `$$ \\text{Probability, } f(E) = ${(1/(Math.exp((v.e-v.ef)*e/(k_B*v.t)) + 1)).toExponential(4)} $$` },
+            "Semiconductor Carrier Concentration Calculator": { formula: "n \\approx N_c e^{-E_g / 2k_B T}", inputs: [{id:"nc",label:"Nc"},{id:"eg",label:"Eg (eV)"},{id:"t",label:"T (K)"}], calc: v => `$$ \\text{Concentration, } n \\approx ${(v.nc * Math.exp(-v.eg*e/(2*k_B*v.t))).toExponential(4)} $$` },
+            "Hall Mobility Calculator": { formula: "\\mu = |R_H| \\sigma", inputs: [{id:"rh",label:"Hall Coeff (m³/C)"},{id:"sig",label:"Conductivity (S/m)"}], calc: v => `$$ \\text{Mobility, } \\mu = ${(Math.abs(v.rh)*v.sig).toExponential(4)} \\text{ m}^2/\\text{V s} $$` },
+            "Band Gap Calculator": { formula: "E_g = \\frac{hc}{\\lambda}", inputs: [{id:"lam",label:"Cutoff λ (nm)"}], calc: v => `$$ \\text{Band Gap, } E_g = ${((h*c)/(v.lam*1e-9*e)).toFixed(4)} \\text{ eV} $$` },
+            "Formation Energy Calculator": { formula: "E_{form} = E_{defect} - E_{perfect}", inputs: [{id:"ed",label:"E_defect (eV)"},{id:"ep",label:"E_perfect (eV)"}], calc: v => `$$ \\text{Energy, } E_{form} = ${(v.ed - v.ep).toFixed(4)} \\text{ eV} $$` },
+            "Cohesive Energy Calculator": { formula: "E_{coh} = E_{bulk} - \\sum E_{iso}", inputs: [{id:"eb",label:"E_bulk (eV)"},{id:"ei",label:"Sum E_iso (eV)"}], calc: v => `$$ \\text{Energy, } E_{coh} = ${(v.eb - v.ei).toFixed(4)} \\text{ eV} $$` },
+            "Binding Energy Calculator": { formula: "BE = \\Delta m c^2", inputs: [{id:"dm",label:"Mass Defect (u)"}], calc: v => `$$ \\text{Binding Energy, } BE = ${(v.dm * 931.5).toFixed(4)} \\text{ MeV} $$` },
+            "Lattice Constant Calculator": { formula: "a = V^{1/3}", inputs: [{id:"v",label:"Volume (Å³)"},{id:"type",label:"Structure (1=Cubic)"}], calc: v => `$$ \\text{Lattice Const, } a = ${(Math.pow(v.v, 1/3)).toFixed(4)} \\text{ \\AA} $$` },
+            "Elastic Constant Calculator": { formula: "C_{11} = \\frac{\\sigma_{11}}{\\varepsilon_{11}}", inputs: [{id:"s1",label:"Stress σ11"},{id:"e1",label:"Strain ε11"}], calc: v => `$$ \\text{Elastic Const, } C_{11} = ${(v.s1/v.e1).toExponential(4)} \\text{ Pa} $$` },
+            "Debye Temperature Calculator": { formula: "\\Theta_D = \\frac{\\hbar v_m}{k_B} \\left(6\\pi^2 \\frac{N}{V}\\right)^{1/3}", inputs: [{id:"n",label:"Density N/V"},{id:"vm",label:"Sound Vel (m/s)"}], calc: v => `$$ \\text{Debye Temp, } \\Theta_D = ${((hbar*v.vm/(k_B)) * Math.pow(6*Math.PI**2 * v.n, 1/3)).toFixed(2)} \\text{ K} $$` },
+
+            // Math & Research Tools
+            "Numerical Derivative Calculator": { 
+                desc: "Calculate the numerical derivative (df/dx). Leave evaluation point 'x' blank for the symbolic format.",
+                formula: "\\frac{d}{dx} f(x)",
+                inputs: [ {id:"func", label:"Function f(x) (e.g., sin(x), x^2)", type:"text", default:"x^2"}, {id:"xval", label:"Evaluate at x (leave blank for symbolic solution) =", type:"text", default:""}, {id:"h", label:"Step size (h) [Numerical Only]", type:"number", default:1e-5} ],
+                calc: v => {
+                    let cleanFunc = v.func.replace(/\*\*/g, '^');
+                    if(!v.xval) {
+                        try {
+                            let symDiff = nerdamer(`diff(${cleanFunc}, x)`).toTeX();
+                            return `$$ \\frac{d}{dx}\\left( ${cleanFunc} \\right) = ${symDiff} $$`;
+                        } catch(e) {
+                            return `<span style="color:var(--warning)">Symbolic derivative failed. Check syntax.</span>`;
+                        }
+                    }
+                    try {
+                        let jsFunc = cleanFunc.replace(/\^/g, '**');
+                        const f = new Function('x', `with(Math) { return ${jsFunc}; }`);
+                        const x = parseFloat(v.xval);
+                        const h = parseFloat(v.h);
+                        const deriv = (f(x + h) - f(x - h)) / (2 * h);
+                        if(isNaN(deriv)) throw new Error();
+                        
+                        let symDiff = nerdamer(`diff(${cleanFunc}, x)`).toTeX();
+                        return `$$ \\frac{d}{dx}\\left( ${cleanFunc} \\right) = ${symDiff} $$ <br> $$ \\text{Evaluated, } f'(${x}) \\approx ${deriv.toFixed(6)} $$`;
+                    } catch (e) {
+                        return `<span style="color:var(--warning)">Error evaluating function. Ensure valid math syntax.</span>`;
+                    }
+                }
+            },
+            "Numerical Integration Calculator": { 
+                desc: "Calculate definite integral via Simpson's rule. Leave 'a' or 'b' blank for the symbolic indefinite integral.",
+                formula: "\\int_a^b f(x)dx", 
+                inputs: [ {id:"func", label:"Function f(x) (e.g., cos(x), x^3)", type:"text", default:"x^3"}, {id:"a", label:"Lower limit a (leave blank for symbolic)", type:"text", default:""}, {id:"b", label:"Upper limit b (leave blank for symbolic)", type:"text", default:""} ], 
+                calc: v => {
+                    let cleanFunc = v.func.replace(/\*\*/g, '^');
+                    if(!v.a || !v.b) {
+                        try {
+                            let symInt = nerdamer(`integrate(${cleanFunc}, x)`).toTeX();
+                            return `$$ \\int \\left( ${cleanFunc} \\right) dx = ${symInt} + C $$`;
+                        } catch(e) {
+                            return `<span style="color:var(--warning)">Symbolic integration failed. Try a simpler function.</span>`;
+                        }
+                    }
+                    try {
+                        let jsFunc = cleanFunc.replace(/\^/g, '**');
+                        const f = new Function('x', `with(Math) { return ${jsFunc}; }`);
+                        const a = parseFloat(v.a), b = parseFloat(v.b), n = 1000, dx = (b-a)/n;
+                        let sum = f(a) + f(b);
+                        for(let i=1; i<n; i++) sum += f(a + i*dx) * (i%2===0 ? 2 : 4);
+                        const area = (dx/3) * sum;
+                        if(isNaN(area)) throw new Error();
+                        return `$$ \\int_{${a}}^{${b}} \\left( ${cleanFunc} \\right) dx \\approx ${area.toFixed(6)} $$`;
+                    } catch (e) { return `<span style="color:var(--warning)">Error evaluating definite integral.</span>`; }
+                } 
+            },
+            "Matrix Calculator": { 
+                desc: "Evaluates Trace and Determinant for any square N x N matrix.",
+                formula: "\\det(A), \\quad \\text{Tr}(A) = \\sum a_{ii}", 
+                inputs: [{id:"mat", label:"Enter Matrix (rows on new lines, elements separated by commas)", type:"textarea", default:"1, 2, 3\n4, 5, 6\n7, 8, 9"}], 
+                calc: v => { 
+                    try {
+                        let A = parseMatrix(v.mat);
+                        let tr = 0; for(let i=0; i<Math.min(A.length, A[0].length); i++) tr+=A[i][i];
+                        let d = det(A);
+                        return `$$ \\text{Matrix Trace, Tr}(A) = ${tr.toFixed(4)} $$ <br> $$ \\text{Determinant, } \\det(A) = ${isNaN(d)?'\\text{Error: Not Square}':d.toFixed(4)} $$`;
+                    } catch(e) { return `<span style="color:var(--warning)">Invalid matrix format.</span>`; }
+                } 
+            },
+            "Determinant Calculator": { 
+                desc: "Calculates the exact determinant of any N x N square matrix using recursive expansion.",
+                formula: "\\det(A) = \\sum (-1)^{i+j} a_{ij} M_{ij}", 
+                inputs: [{id:"mat", label:"Enter Matrix (rows on new lines, commas between elements)", type:"textarea", default:"1, 2, 3\n4, 5, 6\n7, 8, 9"}], 
+                calc: v => { 
+                    try {
+                        let A = parseMatrix(v.mat);
+                        let d = det(A);
+                        return `$$ \\text{Determinant, } \\det(A) = ${isNaN(d)?'\\text{Error: Must be Square Matrix}':d.toFixed(4)} $$`;
+                    } catch(e) { return `<span style="color:var(--warning)">Invalid matrix format.</span>`; }
+                } 
+            },
+            "Eigenvalue/Eigenvector Solver": { 
+                desc: "Finds analytic eigenvalues for 2x2 and 3x3 matrices automatically.",
+                formula: "\\det(A - \\lambda I) = 0", 
+                inputs: [{id:"mat", label:"Enter 2x2 or 3x3 Matrix (comma separated)", type:"textarea", default:"2, 1\n1, 2"}], 
+                calc: v => { 
+                    try {
+                        let A = parseMatrix(v.mat);
+                        if(A.length===2 && A[0].length===2){
+                            let T=A[0][0]+A[1][1], D=A[0][0]*A[1][1]-A[0][1]*A[1][0]; 
+                            let root = Math.sqrt(T*T/4 - D);
+                            return `$$ \\text{Eigenvalues, } \\lambda_{1,2} = ${(T/2).toFixed(4)} \\pm ${root.toFixed(4)} $$`; 
+                        }
+                        if(A.length===3 && A[0].length===3){
+                            let tr = A[0][0]+A[1][1]+A[2][2];
+                            let tr2 = (A[0][0]*A[1][1]-A[0][1]*A[1][0]) + (A[1][1]*A[2][2]-A[1][2]*A[2][1]) + (A[0][0]*A[2][2]-A[0][2]*A[2][0]);
+                            let d = det(A);
+                            return `$$ \\text{Characteristic Eq: } \\lambda^3 - ${tr.toFixed(2)}\\lambda^2 + ${tr2.toFixed(2)}\\lambda - ${d.toFixed(2)} = 0 $$ <br> <span style="font-size:13px;color:var(--text-muted)">*Roots of 3rd degree equations require complex algebraic expansion.</span>`;
+                        }
+                        return `$$ \\text{Analytic exact solver limited to } 2\\times2 \\text{ and } 3\\times3 $$`;
+                    } catch(e) { return `<span style="color:var(--warning)">Invalid matrix format.</span>`; }
+                } 
+            },
+            "Laplace Transform Calculator": { formula: "\\mathcal{L}\\{e^{at}\\} = \\frac{1}{s-a}", inputs: [{id:"a",label:"Constant 'a' for e^(at)", type:"number"}], calc: v => `$$ \\text{Transform, } \\mathcal{L}\\{e^{at}\\} = \\frac{1}{s - ${v.a}} $$` },
+            "Citation Formatter": { inputs: [{id:"a",label:"Author", type:"text"},{id:"y",label:"Year", type:"text"},{id:"t",label:"Title", type:"text"},{id:"j",label:"Journal", type:"text"}], calc: v => `APA: ${v.a} (${v.y}). ${v.t}. <i>${v.j}</i>.` },
+            "DOI Lookup Tool": { inputs: [{id:"doi",label:"DOI String", type:"text"}], calc: v => `<a href="https://doi.org/${v.doi}" target="_blank" style="color:var(--accent)">Click here to resolve DOI: ${v.doi}</a>` },
+            "LaTeX Equation Generator": { formula: "i\\hbar\\frac{\\partial}{\\partial t}\\Psi = \\hat{H}\\Psi", inputs: [{id:"eq",label:"Equation Type (e.g., Schrodinger)", type:"text"}], calc: v => `$$ i\\hbar\\frac{\\partial}{\\partial t}\\Psi(\\mathbf{r},t) = \\hat{H}\\Psi(\\mathbf{r},t) $$` },
+            "Graph Digitizer": { formula: "m = \\frac{y_2 - y_1}{x_2 - x_1}", inputs: [{id:"y2",label:"Y2", type:"number"},{id:"y1",label:"Y1", type:"number"},{id:"x2",label:"X2", type:"number"},{id:"x1",label:"X1", type:"number"}], calc: v => `$$ \\text{Slope, } m = ${((v.y2-v.y1)/(v.x2-v.x1)).toFixed(4)} $$` },
+            "Uncertainty Analysis Tool": { formula: "\\delta = \\sqrt{\\delta a^2 + \\delta b^2}", inputs: [{id:"a",label:"Absolute Error δa", type:"number"},{id:"b",label:"Absolute Error δb", type:"number"}], calc: v => `$$ \\text{Combined Error, } \\delta = ${Math.sqrt(v.a**2 + v.b**2).toFixed(4)} $$` },
+            "Research Paper Readability Checker": { formula: "\\text{Ratio} = \\frac{\\text{Words}}{\\text{Sentences}}", inputs: [{id:"t",label:"Sentence Count", type:"number"},{id:"w",label:"Word Count", type:"number"}], calc: v => `$$ \\text{Ratio} = ${(v.w/v.t).toFixed(1)} $$` },
+            "Unit Consistency Checker": { formula: "[LHS] = [RHS]", inputs: [{id:"L",label:"LHS Dimensions (e.g., M L T-2)", type:"text"},{id:"R",label:"RHS Dimensions", type:"text"}], calc: v => `$$ \\text{Match: } ${v.L === v.R ? "\\text{Consistent}" : "\\text{Inconsistent}"} $$` }
+        };
+
+        const hubCategories = {
+            "General Physics": ["Unit Converter", "Significant Figures Calculator", "Scientific Notation Converter", "Percentage Error Calculator", "Relative Error Calculator", "Error Propagation Calculator", "Weighted Mean Calculator", "Least Squares Fitting Calculator", "Chi-Square Calculator", "Standard Deviation Calculator"],
+            "Mechanics": ["Projectile Motion Calculator", "Free Fall Calculator", "Work-Energy Calculator", "Conservation of Momentum Calculator", "Elastic Collision Calculator", "Inelastic Collision Calculator", "Rotational Kinetic Energy Calculator", "Moment of Inertia Calculator", "Pendulum Period Calculator", "Escape Velocity Calculator"],
+            "Oscillations & Waves": ["Simple Harmonic Motion Calculator", "Spring Constant Calculator", "Resonance Frequency Calculator", "Doppler Effect Calculator", "Wave Speed Calculator", "Standing Wave Calculator", "Beats Frequency Calculator"],
+            "Electricity & Magnetism": ["Ohm's Law Calculator", "Kirchhoff Circuit Solver", "RC Circuit Calculator", "RL Circuit Calculator", "RLC Resonance Calculator", "Capacitor Energy Calculator", "Magnetic Field Calculator", "Solenoid Field Calculator", "Lorentz Force Calculator", "Hall Coefficient Calculator"],
+            "Optics": ["Lens Equation Calculator", "Mirror Equation Calculator", "Magnification Calculator", "Diffraction Grating Calculator", "Bragg's Law Calculator", "Interference Fringe Width Calculator", "Numerical Aperture Calculator", "Fiber Optic Attenuation Calculator"],
+            "Modern Physics & Quantum": ["Photoelectric Effect Calculator", "De Broglie Wavelength Calculator", "Compton Shift Calculator", "Relativistic Energy Calculator", "Relativistic Momentum Calculator", "Mass-Energy Converter", "Radioactive Decay Calculator", "Half-Life Calculator", "Particle in a Box Energy Levels", "Tunneling Probability Calculator", "Quantum Harmonic Oscillator Levels", "Hydrogen Atom Energy Calculator"],
+            "Solid State & Materials": ["Miller Index Calculator", "Interplanar Spacing Calculator", "Bragg Angle Calculator", "Packing Factor Calculator", "Density of Crystal Calculator", "Fermi Energy Calculator", "Fermi-Dirac Distribution Calculator", "Semiconductor Carrier Concentration Calculator", "Hall Mobility Calculator", "Band Gap Calculator", "Formation Energy Calculator", "Cohesive Energy Calculator", "Binding Energy Calculator", "Lattice Constant Calculator", "Elastic Constant Calculator", "Debye Temperature Calculator"],
+            "Math & Research Tools": ["Numerical Derivative Calculator", "Numerical Integration Calculator", "Matrix Calculator", "Determinant Calculator", "Eigenvalue/Eigenvector Solver", "Laplace Transform Calculator", "Citation Formatter", "DOI Lookup Tool", "LaTeX Equation Generator", "Graph Digitizer", "Uncertainty Analysis Tool", "Research Paper Readability Checker", "Unit Consistency Checker"]
+        };
+        
+        const popularTools = [
+            "Unit Converter", 
+            "Numerical Integration Calculator", 
+            "Numerical Derivative Calculator", 
+            "Matrix Calculator",
+            "Bragg's Law Calculator", 
+            "Particle in a Box Energy Levels"
+        ];
+
+        const navList = document.getElementById('nav-list');
+        const gridView = document.getElementById('grid-view');
+        const calcView = document.getElementById('calc-view');
+        const aboutView = document.getElementById('about-view');
+        const headerTitle = document.getElementById('header-title');
+        const headerDesc = document.getElementById('header-desc');
+        const headerStats = document.getElementById('header-stats');
+        
+        let currentCategory = "Dashboard";
+
+        function initApp() {
+            const homeLi = document.createElement('li');
+            homeLi.className = 'nav-item active';
+            homeLi.innerHTML = `🏠 Dashboard`;
+            homeLi.onclick = () => loadDashboard(homeLi);
+            navList.appendChild(homeLi);
+
+            const div1 = document.createElement('li');
+            div1.className = 'nav-divider';
+            navList.appendChild(div1);
+
+            Object.keys(hubCategories).forEach(cat => {
+                const li = document.createElement('li');
+                li.className = 'nav-item';
+                li.innerText = cat;
+                li.onclick = () => loadCategory(cat, li);
+                navList.appendChild(li);
+            });
+
+            const div2 = document.createElement('li');
+            div2.className = 'nav-divider';
+            navList.appendChild(div2);
+
+            const aboutLi = document.createElement('li');
+            aboutLi.className = 'nav-item';
+            aboutLi.innerHTML = `ℹ️ About Physics Calc`;
+            aboutLi.onclick = () => loadAbout(aboutLi);
+            navList.appendChild(aboutLi);
+
+            loadDashboard(homeLi);
+        }
+
+        function loadDashboard(el) {
+            currentCategory = "Dashboard";
+            updateNavState(el || navList.children[0]);
+            
+            headerTitle.innerText = "Physics Calculator Hub for Students, Researchers and Educators";
+            headerDesc.innerText = "100+ Physics, Mathematics, Quantum Mechanics, Solid State Physics and Materials Science tools in one place.";
+            headerStats.style.display = "flex";
+            
+            gridView.innerHTML = '<h2 style="grid-column: 1 / -1; margin-bottom: 12px; font-weight: 500; font-size: 16px; color: var(--accent);">⭐ Most Used Tools</h2>';
+            
+            popularTools.forEach(calc => {
+                renderCard(calc);
+            });
+            
+            showView('grid');
+        }
+
+        function loadCategory(cat, el) {
+            currentCategory = cat;
+            updateNavState(el);
+            
+            headerTitle.innerText = cat;
+            headerDesc.innerText = `Select a computational tool from the ${cat} category.`;
+            headerStats.style.display = "none";
+            
+            gridView.innerHTML = '';
+            hubCategories[cat].forEach(calc => {
+                renderCard(calc);
+            });
+            
+            showView('grid');
+        }
+
+        function loadAbout(el) {
+            updateNavState(el);
+            headerTitle.innerText = "About the Platform";
+            headerDesc.innerText = "Information regarding Physics Calc and its academic focus.";
+            headerStats.style.display = "none";
+            showView('about');
+        }
+
+        function renderCard(calcName) {
+            const logic = calcLogic[calcName];
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<h3>${calcName}</h3><p style="color: ${logic ? 'var(--accent-muted)' : 'var(--danger)'}">${logic ? "Open Calculator →" : "Module Pending"}</p>`;
+            card.onclick = () => openCalculator(calcName);
+            gridView.appendChild(card);
+        }
+
+        function updateNavState(el) {
+            if(!el) return;
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function openCalculator(name) {
+            const logic = calcLogic[name];
+            if (!logic) return;
+
+            headerTitle.innerText = name;
+            headerDesc.innerText = logic.desc || "Enter parameters below to calculate.";
+            headerStats.style.display = "none";
+            
+            const formulaContainer = document.getElementById('formula-container');
+            const formContainer = document.getElementById('calc-form-container');
+            const resultBox = document.getElementById('calc-result');
+            
+            if (logic.formula) {
+                formulaContainer.innerHTML = `<div class="formula-box">$$ ${logic.formula} $$</div>`;
+                formulaContainer.style.display = 'block';
+            } else {
+                formulaContainer.innerHTML = '';
+                formulaContainer.style.display = 'none';
+            }
+
+            resultBox.innerHTML = 'Awaiting input... Result will appear here.';
+            resultBox.classList.remove('active');
+            formContainer.innerHTML = '';
+
+            logic.inputs.forEach(inp => {
+                const grp = document.createElement('div');
+                grp.className = 'form-group';
+                
+                if (inp.type === 'select' && inp.options) {
+                    let optionsHtml = inp.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                    grp.innerHTML = `<label>${inp.label}</label><select id="${inp.id}">${optionsHtml}</select>`;
+                } else if (inp.type === 'textarea') {
+                    let defaultVal = inp.default !== undefined ? inp.default : '';
+                    grp.innerHTML = `<label>${inp.label}</label><textarea id="${inp.id}">${defaultVal}</textarea>`;
+                } else {
+                    let defaultVal = inp.default !== undefined ? `value="${inp.default}"` : '';
+                    grp.innerHTML = `<label>${inp.label}</label><input type="${inp.type || 'text'}" id="${inp.id}" step="any" ${defaultVal}>`;
+                }
+                formContainer.appendChild(grp);
+            });
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-calc';
+            btn.innerText = "Calculate Results";
+            btn.onclick = () => {
+                const vals = {};
+                logic.inputs.forEach(inp => {
+                    const val = document.getElementById(inp.id).value;
+                    vals[inp.id] = (inp.type === 'text' || inp.type === 'textarea' || inp.type === 'select') ? val : parseFloat(val) || 0;
+                });
+                
+                resultBox.innerHTML = logic.calc(vals);
+                resultBox.classList.add('active'); 
+                
+                if(window.renderMathInElement) {
+                    renderMathInElement(resultBox, {
+                        delimiters: [ {left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false} ]
+                    });
+                }
+            };
+            formContainer.appendChild(btn);
+
+            logic.inputs.forEach(inp => {
+                const inputElement = document.getElementById(inp.id);
+                if (inputElement && inp.type !== 'textarea') {
+                    inputElement.addEventListener("keypress", function(event) {
+                        if (event.key === "Enter") {
+                            event.preventDefault(); 
+                            btn.click(); 
+                        }
+                    });
+                }
+            });
+
+            showView('calc');
+
+            if(window.renderMathInElement && logic.formula) {
+                renderMathInElement(formulaContainer, {
+                    delimiters: [ {left: "$$", right: "$$", display: true} ]
+                });
+            }
+        }
+
+        function showView(viewName) {
+            gridView.style.display = viewName === 'grid' ? 'grid' : 'none';
+            calcView.style.display = viewName === 'calc' ? 'block' : 'none';
+            aboutView.style.display = viewName === 'about' ? 'block' : 'none';
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
