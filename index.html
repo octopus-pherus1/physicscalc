@@ -34,7 +34,16 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; }
         
-        body { background-color: var(--bg-base); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: 14px; position: relative; z-index: 0; }
+        body { 
+            background-color: var(--bg-base); 
+            color: var(--text-main); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; /* Default desktop lock */
+            font-size: 14px; 
+            position: relative; 
+            z-index: 0; 
+        }
 
         body::before {
             content: ""; position: fixed; inset: 0;
@@ -76,6 +85,7 @@
         .stats-row { display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
         .stat-badge { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 4px 12px; border-radius: 4px; font-size: 12px; color: var(--text-muted); font-weight: 600;}
 
+        /* Scroll container for desktop */
         .content-container { padding: 32px 48px; flex-grow: 1; overflow-y: auto; padding-bottom: 60px; }
 
         /* Cards & Grid */
@@ -85,7 +95,7 @@
         .card h3 { font-size: 15px; margin-bottom: 6px; color: var(--text-main); font-weight: 500;}
         .card p { font-size: 12px; color: var(--accent-muted); font-weight: 600; }
 
-        /* Calculator View & Formulas */
+        /* Calculator View */
         #calc-view, #about-view { display: none; max-width: 650px; }
         .back-btn { background: transparent; color: var(--accent); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; margin:0;}
         .back-btn:hover { text-decoration: underline; }
@@ -127,14 +137,44 @@
         .disclaimers { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: flex-end; }
         .caution { color: var(--warning); display: flex; gap: 8px; background: rgba(245, 158, 11, 0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.2); line-height: 1.4; align-items: center; text-align: left; max-width: 650px;}
 
+        /* MOBILE RESPONSIVENESS UPGRADE (Full Page Scroll Fix) */
         @media (max-width: 768px) {
+            body { 
+                height: auto; /* Remove 100vh lock */
+                overflow: visible; /* Allow body scrolling */
+                display: block; /* Remove flex constraint */
+            }
+            
+            main { 
+                overflow: visible; /* Let content dictate height */
+                min-height: 100vh;
+                display: block; /* Stack components naturally */
+            }
+
             aside { position: fixed; left: -300px; height: 100vh; }
             aside.open { left: 0; }
             .menu-btn { display: block; }
-            header { padding: 24px 24px 16px; }
-            .content-container { padding: 24px; }
+            
+            header { padding: 24px 24px 16px; position: relative; } /* Unstick from flex layout */
+            
+            .content-container { 
+                padding: 24px; 
+                overflow-y: visible; /* Remove internal scrollbar */
+                height: auto; 
+                padding-bottom: 40px;
+            }
+            
             #calc-view, #about-view { max-width: 100%; }
-            footer { flex-direction: column; align-items: center; text-align: center; padding: 20px; gap: 16px; }
+            
+            footer { 
+                flex-direction: column; 
+                align-items: center; 
+                text-align: center; 
+                padding: 20px; 
+                gap: 16px; 
+                position: relative; /* Make it flow at bottom of document */
+            }
+            
             .credits { white-space: normal; }
             .disclaimers { justify-content: center; text-align: center; }
             .caution { flex-direction: column; text-align: center; }
@@ -248,10 +288,13 @@
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('mobile-overlay').classList.toggle('open');
+            // Prevent body scroll when menu is open on mobile
+            document.body.style.overflow = document.getElementById('sidebar').classList.contains('open') ? 'hidden' : '';
         }
         function closeMenu() {
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('mobile-overlay').classList.remove('open');
+            document.body.style.overflow = '';
         }
 
         // MATRIX PARSING HELPER
@@ -380,17 +423,14 @@
             "Commutator Solver [A,B]": { formula: "[A, B] = AB - BA", inputs: [{id:"a",label:"Matrix A (comma separated rows)", type:"textarea", default:"0, 1\n1, 0"},{id:"b",label:"Matrix B (comma separated rows)", type:"textarea", default:"1, 0\n0, -1"}], calc: v => { 
                 try {
                     let A = parseMatrix(v.a), B = parseMatrix(v.b);
-                    if(A.length!==A[0].length || B.length!==B[0].length || A.length!==B.length) return `<span style="color:var(--warning)">Matrices must be square and of equal dimensions.</span>`;
-                    let N = A.length;
-                    let AB = Array(N).fill(0).map(()=>Array(N).fill(0));
-                    let BA = Array(N).fill(0).map(()=>Array(N).fill(0));
+                    if(A.length!==A[0].length || B.length!==B[0].length || A.length!==B.length) return `<span style="color:var(--warning)">Matrices must be square and equal.</span>`;
+                    let N = A.length; let AB = Array(N).fill(0).map(()=>Array(N).fill(0)); let BA = Array(N).fill(0).map(()=>Array(N).fill(0));
                     for(let i=0;i<N;i++) for(let j=0;j<N;j++) for(let k=0;k<N;k++){ AB[i][j] += A[i][k]*B[k][j]; BA[i][j] += B[i][k]*A[k][j]; }
-                    let C = Array(N).fill(0).map(()=>Array(N).fill(0));
-                    let isZero = true;
+                    let C = Array(N).fill(0).map(()=>Array(N).fill(0)); let isZero = true;
                     for(let i=0;i<N;i++) for(let j=0;j<N;j++){ C[i][j] = AB[i][j]-BA[i][j]; if(C[i][j]!==0) isZero = false; }
                     let cStr = C.map(r => r.join(' & ')).join(' \\\\ ');
                     return `$$ [A,B] = \\begin{bmatrix} ${cStr} \\end{bmatrix} $$ <br> $$ \\text{Commuting: } ${isZero ? "\\text{Yes}" : "\\text{No}"} $$`;
-                } catch(e) { return `<span style="color:var(--warning)">Invalid matrix format.</span>`; }
+                } catch(e) { return `<span style="color:var(--warning)">Invalid format.</span>`; }
             } },
             "De Broglie Wavelength Calculator": { formula: "\\lambda = \\frac{h}{mv}", inputs: [{id:"m",label:"Mass (kg)", type:"number", default:9.11e-31},{id:"v",label:"Velocity (m/s)", type:"number", default:1e6}], calc: v => `$$ \\text{Wavelength, } \\lambda = ${(h/(v.m*v.v)).toExponential(4)} \\text{ m} $$` },
             "Photoelectric Effect Calculator": { formula: "K_{max} = \\frac{hc}{\\lambda} - \\Phi", inputs: [{id:"lam",label:"Wavelength (nm)", type:"number", default:300},{id:"phi",label:"Work Function (eV)", type:"number", default:2.2}], calc: v => { let E=(h*c)/(v.lam*1e-9)/e; return `$$ \\text{Max KE, } K_{max} = ${Math.max(0, E-v.phi).toFixed(4)} \\text{ eV} $$`; } },
@@ -711,7 +751,8 @@
             const formContainer = document.getElementById('calc-form-container');
             const resultBox = document.getElementById('calc-result');
             
-            let isPractice = document.getElementById('practiceToggle').checked;
+            let practiceToggle = document.getElementById('practiceToggle');
+            let isPractice = practiceToggle ? practiceToggle.checked : false;
 
             if (logic.formula && !isPractice) {
                 formulaContainer.innerHTML = `<div class="formula-box">$$ ${logic.formula} $$</div>`;
